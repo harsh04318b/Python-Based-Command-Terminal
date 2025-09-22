@@ -50,12 +50,13 @@ def rm(args):
 # --- Streamlit App ---
 st.set_page_config(page_title="Streamlit Terminal", layout="wide")
 
-st.title("💻 Streamlit Terminal Emulator")
+st.title("💻 Python Based Terminal Emulator")
 
 # Store command history in session state
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Commands dictionary
 commands = {
     "ls": ls,
     "cd": cd,
@@ -64,10 +65,12 @@ commands = {
     "rm": rm
 }
 
-# Input box for command
-command = st.text_input(f"{os.getcwd()} $", key="command_input")
+# --- Command handler ---
+def handle_command():
+    command = st.session_state.command_input.strip()
+    if not command:
+        return
 
-if command:
     parts = command.split()
     cmd = parts[0]
     args = parts[1:]
@@ -83,8 +86,15 @@ if command:
     else:
         st.session_state.history.append(f"{os.getcwd()} $ {command}\n{cmd}: command not found")
 
-    # Clear input after running
+    # Clear input safely
     st.session_state.command_input = ""
+
+# Input box with callback
+st.text_input(
+    f"{os.getcwd()} $",
+    key="command_input",
+    on_change=handle_command
+)
 
 # Display terminal output (history)
 st.text_area("Terminal Output", "\n".join(st.session_state.history), height=400)
